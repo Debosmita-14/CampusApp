@@ -5,35 +5,39 @@ import { useAuth } from '../AuthContext';
 import { getApiUrl } from '../api';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SignupScreen({ navigation }) {
+export default function AdminLoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, switchPortal } = useAuth();
 
-  const handleSignup = () => {
+  const handleLogin = () => {
     if (!username || !password) {
-      Alert.alert('Error', 'Please enter both username and password.');
+      Alert.alert('Error', 'Please enter admin credentials.');
       return;
     }
 
     setLoading(true);
-    fetch(getApiUrl('/auth/signup'), {
+    fetch(getApiUrl('/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
       .then(res => {
-        if (!res.ok) throw new Error('Username may already exist or bad request');
+        if (!res.ok) throw new Error('Invalid credentials');
         return res.json();
       })
       .then(data => {
         setLoading(false);
+        if (data.user.role !== 'admin') {
+          Alert.alert('Access Denied', 'This portal is for administrators only.');
+          return;
+        }
         login(data.user);
       })
       .catch(err => {
         setLoading(false);
-        Alert.alert('Signup Failed', err.message);
+        Alert.alert('Login Failed', err.message);
       });
   };
 
@@ -43,14 +47,17 @@ export default function SignupScreen({ navigation }) {
          <Ionicons name="arrow-back" size={24} color="#fff" />
          <Text style={styles.backText}>Change Portal</Text>
       </TouchableOpacity>
-
+      
       <View style={styles.card}>
-        <Text style={styles.title}>Student Signup</Text>
-        <Text style={styles.subtitle}>Create your student account</Text>
+        <View style={styles.iconWrapper}>
+           <Ionicons name="shield-checkmark" size={40} color="#f59e0b" />
+        </View>
+        <Text style={styles.title}>Admin Access</Text>
+        <Text style={styles.subtitle}>Enter secure credentials</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="Admin Username"
           placeholderTextColor="#94a3b8"
           autoCapitalize="none"
           value={username}
@@ -58,19 +65,15 @@ export default function SignupScreen({ navigation }) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="Admin Password"
           placeholderTextColor="#94a3b8"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign Up</Text>}
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkContainer}>
-          <Text style={styles.linkText}>Already have an account? <Text style={styles.linkTextBold}>Login</Text></Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Secure Login</Text>}
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -101,7 +104,16 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#f59e0b',
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  iconWrapper: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
   title: {
     fontSize: 32,
@@ -127,7 +139,7 @@ const styles = StyleSheet.create({
     borderColor: '#334155',
   },
   button: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#f59e0b',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -136,18 +148,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
-  },
-  linkContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#cbd5e1',
-    fontSize: 14,
-  },
-  linkTextBold: {
-    color: '#6366f1',
     fontWeight: 'bold',
   },
 });

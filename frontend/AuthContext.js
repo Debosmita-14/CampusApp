@@ -4,6 +4,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // null if not logged in
+  const [portal, setPortal] = useState(null); // 'admin' | 'student' | null
 
   const login = (userData) => {
     setUser(userData);
@@ -11,10 +12,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    setPortal(null);
+  };
+
+  const switchPortal = (selectedPortal) => {
+    setPortal(selectedPortal);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, portal, login, logout, switchPortal }}>
       {children}
     </AuthContext.Provider>
   );

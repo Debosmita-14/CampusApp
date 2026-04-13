@@ -3,12 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../AuthContext';
 import { getApiUrl } from '../api';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, switchPortal } = useAuth();
 
   const handleLogin = () => {
     if (!username || !password) {
@@ -38,9 +39,14 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => switchPortal(null)}>
+         <Ionicons name="arrow-back" size={24} color="#fff" />
+         <Text style={styles.backText}>Change Portal</Text>
+      </TouchableOpacity>
+
       <View style={styles.card}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to CampusApp</Text>
+        <Text style={styles.title}>Student Login</Text>
+        <Text style={styles.subtitle}>Sign in to your student account</Text>
 
         <TextInput
           style={styles.input}
@@ -76,6 +82,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  backText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontWeight: 'bold',
   },
   card: {
     backgroundColor: 'rgba(30, 41, 59, 0.8)',
