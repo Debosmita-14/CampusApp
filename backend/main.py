@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Ensure the backend directory is in the Python path for Vercel
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import booking, lost_found, events, chatbot
@@ -24,4 +30,8 @@ app.include_router(chatbot.router, prefix="/api/chatbot", tags=["chatbot"])
 
 @app.get("/")
 def root():
+    return {"message": "Campus Resource API is running."}
+
+@app.get("/api")
+def api_root():
     return {"message": "Campus Resource API is running."}
