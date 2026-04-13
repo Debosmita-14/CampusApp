@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { getApiUrl } from '../api';
 
 export default function EventsScreen() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [registeringId, setRegisteringId] = useState(null);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
 
   useEffect(() => {
     fetch(getApiUrl('/events/'))
@@ -19,8 +21,28 @@ export default function EventsScreen() {
       });
   }, []);
 
+  const handleRSVP = (eventId, eventTitle) => {
+    setRegisteringId(eventId);
+    fetch(getApiUrl(`/events/${eventId}/register`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRegisteringId(null);
+        setRegisteredEvents(prev => [...prev, eventId]);
+        Alert.alert('RSVP Confirmed!', `You have registered for "${eventTitle}"`);
+      })
+      .catch(err => {
+        setRegisteringId(null);
+        Alert.alert('Error', 'Could not register. Please try again.');
+        console.error("RSVP error:", err);
+      });
+  };
+
   const renderEvent = ({ item }) => {
     const formattedDate = new Date(item.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    const isRegistered = registeredEvents.includes(item.id);
     return (
       <View style={styles.card}>
         <View style={styles.dateBox}>
@@ -30,8 +52,16 @@ export default function EventsScreen() {
           <Text style={styles.eventTitle}>{item.title}</Text>
           <Text style={styles.eventLocation}>📍 {item.location}</Text>
         </View>
-        <TouchableOpacity style={styles.regButton}>
-          <Text style={styles.regButtonText}>RSVP</Text>
+        <TouchableOpacity 
+          style={[styles.regButton, isRegistered && styles.regButtonDone]}
+          onPress={() => handleRSVP(item.id, item.title)}
+          disabled={isRegistered || registeringId === item.id}
+        >
+          {registeringId === item.id ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.regButtonText}>{isRegistered ? '✓ Going' : 'RSVP'}</Text>
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -42,6 +72,8 @@ export default function EventsScreen() {
       <Text style={styles.header}>Upcoming Events</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#6366f1" style={{ marginTop: 50 }} />
+      ) : events.length === 0 ? (
+        <Text style={styles.emptyText}>No upcoming events at the moment.</Text>
       ) : (
         <FlatList
           data={events}
@@ -106,9 +138,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 8,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  regButtonDone: {
+    backgroundColor: '#10b981',
   },
   regButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  emptyText: {
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: 16,
   },
 });
