@@ -8,7 +8,6 @@ export default function BookingsScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  useEffect(() => {
     fetch(getApiUrl('/bookings/rooms'))
       .then(res => res.json())
       .then(data => {
