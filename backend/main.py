@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import booking, lost_found, events, chatbot
+from routers import booking, lost_found, events, chatbot, auth
 
 app = FastAPI(
     title="Campus Resource API",
@@ -27,6 +27,7 @@ app.include_router(booking.router, prefix="/api/bookings", tags=["bookings"])
 app.include_router(lost_found.router, prefix="/api/lost-found", tags=["lost-found"])
 app.include_router(events.router, prefix="/api/events", tags=["events"])
 app.include_router(chatbot.router, prefix="/api/chatbot", tags=["chatbot"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 @app.get("/")
 def root():

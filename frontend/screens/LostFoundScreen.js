@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getApiUrl } from '../api';
 
 export default function LostFoundScreen() {
@@ -77,7 +78,7 @@ export default function LostFoundScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.header}>Lost & Found</Text>
         <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
@@ -167,14 +168,13 @@ export default function LostFoundScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
     padding: 20,
   },
   headerRow: {
@@ -199,10 +199,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     padding: 20,
     borderRadius: 15,
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
   badge: {
     alignSelf: 'flex-start',

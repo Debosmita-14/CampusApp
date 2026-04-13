@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getApiUrl } from '../api';
+import { useAuth } from '../AuthContext';
 
 export default function EventsScreen() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [registeringId, setRegisteringId] = useState(null);
   const [registeredEvents, setRegisteredEvents] = useState([]);
+  
+  // Admin Add Event state
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const [modalVisible, setModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ title: '', date: '', location: '' });
 
-  useEffect(() => {
+  const fetchEvents = () => {
     fetch(getApiUrl('/events/'))
       .then(res => res.json())
       .then(data => {
@@ -19,6 +28,10 @@ export default function EventsScreen() {
         console.error("Backend connection error:", err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchEvents();
   }, []);
 
   const handleRSVP = (eventId, eventTitle) => {
@@ -36,7 +49,35 @@ export default function EventsScreen() {
       .catch(err => {
         setRegisteringId(null);
         Alert.alert('Error', 'Could not register. Please try again.');
-        console.error("RSVP error:", err);
+      });
+  };
+
+  const handleAddEvent = () => {
+    if (!formData.title.trim() || !formData.date.trim() || !formData.location.trim()) {
+      Alert.alert('Missing Info', 'Please fill in all fields (Title, Date, Location).');
+      return;
+    }
+
+    setSubmitting(true);
+    fetch(getApiUrl('/events/add'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setSubmitting(false);
+        if (data.event) {
+          setEvents(prev => [...prev, data.event]);
+        }
+        setModalVisible(false);
+        setFormData({ title: '', date: '', location: '' });
+        Alert.alert('Success!', 'New event has been added.');
+      })
+      .catch(err => {
+        setSubmitting(false);
+        Alert.alert('Error', 'Could not add event. Please try again.');
+        console.error("Event error:", err);
       });
   };
 
@@ -68,8 +109,15 @@ export default function EventsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Upcoming Events</Text>
+    <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.container}>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>Upcoming Events</Text>
+        {isAdmin && (
+          <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <Text style={styles.addButtonText}>+ Create Event</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {loading ? (
         <ActivityIndicator size="large" color="#6366f1" style={{ marginTop: 50 }} />
       ) : events.length === 0 ? (
@@ -81,29 +129,75 @@ export default function EventsScreen() {
           renderItem={renderEvent}
         />
       )}
-    </View>
+
+      {/* Add Event Modal (Admin Only) */}
+      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New Event</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Event Title"
+              placeholderTextColor="#64748b"
+              value={formData.title}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Date (YYYY-MM-DD)"
+              placeholderTextColor="#64748b"
+              value={formData.date}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, date: text }))}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Location"
+              placeholderTextColor="#64748b"
+              value={formData.location}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.submitButton} onPress={handleAddEvent} disabled={submitting}>
+                {submitting ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.submitButtonText}>Add Event</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
     padding: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 20,
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     padding: 15,
     borderRadius: 15,
     marginBottom: 15,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
   },
   dateBox: {
     backgroundColor: '#3b82f6',
@@ -154,4 +248,65 @@ const styles = StyleSheet.create({
     marginTop: 50,
     fontSize: 16,
   },
+  addButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1e293b',
+    borderRadius: 15,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#475569',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  input: {
+    backgroundColor: '#0f172a',
+    borderRadius: 8,
+    color: '#fff',
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 12,
+    backgroundColor: '#475569',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: { color: '#fff', fontWeight: 'bold' },
+  submitButton: {
+    flex: 1,
+    padding: 12,
+    backgroundColor: '#f59e0b',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitButtonText: { color: '#fff', fontWeight: 'bold' },
 });

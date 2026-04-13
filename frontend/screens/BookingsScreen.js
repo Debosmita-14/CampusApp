@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getApiUrl } from '../api';
 
 export default function BookingsScreen() {
@@ -76,7 +77,7 @@ export default function BookingsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.header}>Available Rooms</Text>
         <TouchableOpacity onPress={fetchRooms} style={styles.refreshButton}>
@@ -95,14 +96,13 @@ export default function BookingsScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
     padding: 20,
   },
   headerRow: {
@@ -122,13 +122,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
   },
   roomCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     padding: 20,
     borderRadius: 15,
     marginBottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
     borderLeftWidth: 4,
     borderLeftColor: '#6366f1',
   },

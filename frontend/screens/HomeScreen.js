@@ -1,13 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../AuthContext';
 
 export default function HomeScreen({ navigation }) {
+  const { user } = useAuth();
+  
   return (
     <ScrollView style={styles.container}>
       <LinearGradient colors={['#6366f1', '#4f46e5']} style={styles.headerCard}>
-        <Text style={styles.welcomeText}>Welcome back, Student!</Text>
-        <Text style={styles.subText}>What do you need today?</Text>
+        <Text style={styles.welcomeText}>Welcome back, {user?.username || 'Student'}!</Text>
+        <Text style={styles.subText}>{user?.role === 'admin' ? 'Admin Dashboard' : 'What do you need today?'}</Text>
       </LinearGradient>
       
       <View style={styles.quickActions}>
