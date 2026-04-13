@@ -7,7 +7,6 @@ export default function LostFoundScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  useEffect(() => {
     fetch(getApiUrl('/lost-found/'))
       .then(res => res.json())
       .then(data => {

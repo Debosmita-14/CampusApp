@@ -7,7 +7,6 @@ export default function EventsScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  useEffect(() => {
     fetch(getApiUrl('/events/'))
       .then(res => res.json())
       .then(data => {
