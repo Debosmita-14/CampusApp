@@ -38,4 +38,4 @@ Download "Expo Go" on your iOS or Android device, or use an emulator to run the 
 
 ## Architecture & Styling
 - **Tech Stack**: React Native, Python 3.10+, FastAPI.
-- **Theming**: Tailored dark mode using 'Slate' and 'Indigo' color palettes (`#0f172a`, `#6366f1`) to give it a premium, focused appearance. Clean navigation flows via BottomTabs with iconography.
+- **Theming**: Tailored dark mode using 'Slate' and 'Indigo' color palettes (`#0f172a`, `#6366f1`) to give it a premium, focused appearance. Clean navigation flows via BottomTabs.
