@@ -6,12 +6,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import booking, lost_found, events, chatbot, auth
+from routers import booking, lost_found, events, chatbot, auth, analytics
 
 app = FastAPI(
-    title="Campus Resource API",
-    description="Backend for the AI-powered campus resource management system.",
-    version="1.0.0"
+    title="CampusOS API",
+    description="Backend for the AI-powered Campus Operating System.",
+    version="2.0.0"
 )
 
 # Allow all origins for development
@@ -28,11 +28,12 @@ app.include_router(lost_found.router, prefix="/api/lost-found", tags=["lost-foun
 app.include_router(events.router, prefix="/api/events", tags=["events"])
 app.include_router(chatbot.router, prefix="/api/chatbot", tags=["chatbot"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 
 @app.get("/")
 def root():
-    return {"message": "Campus Resource API is running."}
+    return {"message": "CampusOS API v2.0 is running.", "status": "operational"}
 
 @app.get("/api")
 def api_root():
-    return {"message": "Campus Resource API is running."}
+    return {"message": "CampusOS API v2.0 is running.", "status": "operational"}
